@@ -11,7 +11,7 @@ import cv2
 ################
 
 # Path to dataset
-directory = "/home/nils/Documents/Studium/Veranstaltungen/WiSe_21_22/BP/Vortraege/a-pressure-map-dataset-for-in-bed-posture-classification-1.0.0/"
+directory = "./a-pressure-map-dataset-for-in-bed-posture-classification-1.0.0/"
 
 # Read first text file which contains 82 Pressure Images Frames, each is stored as one line of integer values
 df = pd.read_csv(directory + "experiment-i/S1/1.txt", sep="\t", header=None)
@@ -31,16 +31,27 @@ for i in range(64):
 #
 # Data Preprocessing
 # Input is given as 2D array in "frame"
-# 
+#
 ################
 
 # Transform 2D List into Image and apply Gaussian blur
 # Numpy array needed for PIL package
 frame = np.asarray(frame, dtype=np.uint8)
-image = Image.fromarray(frame)
+
+# Blurring
+image = Image.fromarray(frame.copy())
 image_blur = image.filter(ImageFilter.GaussianBlur)
-kernel = np.ones((5, 5), np.uint8)
-image_bridge = cv2.morphologyEx(image_blur, cv2.MORPH_OPEN, kernel, )
+frame_blur = cv2.GaussianBlur(frame.copy(), (7, 7), cv2.BORDER_DEFAULT)
+
+# Erosion
+frame_eroded = cv2.erode(frame_blur.copy(), None, iterations=1)
+
+# Binarize
+th, frame_thresh = cv2.threshold(frame_eroded, np.median(frame), 255, cv2.THRESH_BINARY)
+
+# Closing
+kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
+frame_closed = cv2.morphologyEx(frame_eroded, cv2.MORPH_CLOSE, kernel)
 
 # image.save('Positionserkennung/test.png')
 # image.save('Positionserkennung/test_blur.png')
@@ -49,19 +60,24 @@ image_bridge = cv2.morphologyEx(image_blur, cv2.MORPH_OPEN, kernel, )
 #
 # Data Visualization
 # Can use both matplotlib (looks better) or PIL
-# 
+#
 ################
 
 # Transform Images back to arrays to visualize them with maptlotlib because it has better visualization
 frame = np.asarray(image)
-frame_blur = np.asarray(image_bridge)
 # Alternative:
 # iamae.show()
 # image_blur.show()
 
 # Visualize 2D Pressure Image as heatmap, cmap specifies the color scheme for the plot
-plt.subplot(1, 2, 1)
+plt.subplot(2, 3, 1)
 plt.imshow(frame, origin="lower", cmap="gist_stern")
-plt.subplot(1, 2, 2)
+plt.subplot(2, 3, 2)
 plt.imshow(frame_blur, origin="lower", cmap="gist_stern")
+plt.subplot(2, 3, 3)
+plt.imshow(frame_eroded, origin="lower", cmap="gist_stern")
+plt.subplot(2, 3, 4)
+plt.imshow(frame_closed, origin="lower", cmap="gist_stern")
+plt.subplot(2, 3, 5)
+plt.imshow(frame_thresh, origin="lower", cmap="gist_stern")
 plt.show()
