@@ -5,7 +5,7 @@ import torch.nn as nn
 import torchvision
 from torch.utils.data import DataLoader, random_split
 
-from utils.dataset import PressureDataset
+from utils.dataset import PhysionetDataset, AmbientaDataset
 from utils.model import ConvNet
 from utils.transforms import Blur, Close, Erode, ToTensor
 
@@ -15,11 +15,10 @@ from utils.transforms import Blur, Close, Erode, ToTensor
 #
 ################
 
-num_epochs = 4
+num_epochs = 10
 learning_rate = 0.001
 batch_size = 100
-num_classes = len(PressureDataset.classes)
-train_size_percentage = 0.1
+train_size_percentage = 0.8
 
 ################
 #
@@ -29,13 +28,13 @@ train_size_percentage = 0.1
 
 composed_transforms = torchvision.transforms.Compose([ToTensor()])
 
-train_dataset = PressureDataset(composed_transforms)
-print(train_dataset.x.shape)
-print(train_dataset.y.shape)
+dataset = PhysionetDataset(composed_transforms)
+print(dataset.x.shape)
+print(dataset.y.shape)
 
-train_size = int(train_size_percentage * len(train_dataset))
-test_size = len(train_dataset) - train_size
-train_dataset, test_dataset = random_split(train_dataset, [train_size, test_size])
+train_size = int(train_size_percentage * len(dataset))
+test_size = len(dataset) - train_size
+train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=batch_size)
@@ -48,6 +47,7 @@ print(sample.shape, label)
 # Machine Learning Part
 #
 ################
+num_classes = len(dataset.classes)
 
 # device config
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -61,10 +61,6 @@ optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
 n_total_steps = len(train_loader)
 for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
-        # print(images.shape)
-        images = images.reshape((-1, 1, 64, 32))
-        # images = images.float()
-        labels = labels.reshape((-1))
         labels = labels.long()
         # print(images.shape) # torch.Size([4, 1, 64, 32])
         images = images.to(device)
@@ -78,7 +74,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
-        if (i+1) % 1 == 0:
+        if (i+1) % 10 == 0:
             print(f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}")
 
 
@@ -88,9 +84,6 @@ with torch.no_grad():
     n_class_correct = [0 for i in range(num_classes)]
     n_class_samples = [0 for i in range(num_classes)]
     for images, labels in test_loader:
-        images = images.reshape((-1, 1, 64, 32))
-        images = images.float()
-        labels = labels.reshape((-1))
         images = images.to(device)
         labels = labels.to(device)
         outputs = model(images)
@@ -112,12 +105,11 @@ with torch.no_grad():
     acc = 100.0 * n_correct/n_samples
     print(n_class_correct)
     print(n_class_samples)
-    print(sum(n_class_samples))
 
     print(f'Accuracy of the network: {acc}')
     for i in range(num_classes):
         acc = 100.0 * n_class_correct[i]/n_class_samples[i]
-        print(f'Accuracy of {PressureDataset.classes[i]}: {acc}%')
+        print(f'Accuracy of {dataset.classes[i]}: {acc}%')
 
 
 ################
@@ -128,7 +120,7 @@ with torch.no_grad():
 ################
 
 # Transform Images back to arrays to visualize them with maptlotlib because it has better visualization
-frame = np.asarray(sample)
+frame = np.asarray(sample[0])
 
 # Visualize 2D Pressure Image as heatmap, cmap specifies the color scheme for the plot
 plt.subplot(2, 3, 1)

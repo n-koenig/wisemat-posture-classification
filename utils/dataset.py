@@ -1,12 +1,24 @@
+import enum
 import numpy as np
+import pandas as pd
 from functools import reduce
 from sklearn.utils import shuffle
 from torch.utils.data import Dataset
 
-class PressureDataset(Dataset):
+
+class PhysionetDataset(Dataset):
     labels_for_file = [0, 1, 2, 6, 6, 7, 7, 0, 0, 0, 0, 0, 3, 4, 5, 5, 5]
-    directory = "./a-pressure-map-dataset-for-in-bed-posture-classification-1.0.0/"
-    classes = ('Supine', 'Right', 'Left', 'Right Fetus', 'Left Fetus', 'Supine Bed Incline', 'Right Body Roll', 'Left Body Roll')
+    directory = "./data/physionet/"
+    classes = (
+        "Supine",
+        "Right",
+        "Left",
+        "Right Fetus",
+        "Left Fetus",
+        "Supine Bed Incline",
+        "Right Body Roll",
+        "Left Body Roll",
+    )
 
     def __init__(self, transform=None):
         x_tensors = []
@@ -14,15 +26,25 @@ class PressureDataset(Dataset):
         for subject in range(1, 2):
             for file in range(1, 18):
                 # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
-                raw_frames = np.loadtxt(f"{self.directory}experiment-i/S{subject}/{file}.txt", delimiter="\t", usecols=([_ for _ in range(2048)]), skiprows=2, dtype=np.float32)
-                x_tensors.append(np.flip(np.reshape(raw_frames, (raw_frames.shape[0], 64, 32)), 1))
-                y_tensors.append(np.full([raw_frames.shape[0]], self.labels_for_file[file-1]))
-                print(f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset")
+                raw_frames = np.loadtxt(
+                    f"{self.directory}experiment-i/S{subject}/{file}.txt",
+                    delimiter="\t",
+                    usecols=([_ for _ in range(2048)]),
+                    skiprows=2,
+                    dtype=np.float32,
+                )
+                print(raw_frames.shape)
+                x_tensors.append(np.flip(np.reshape(raw_frames, (-1, 1, 64, 32)), 2))
+                y_tensors.append(
+                    np.full([raw_frames.shape[0]], self.labels_for_file[file - 1])
+                )
+                print(
+                    f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset"
+                )
 
         self.x = np.concatenate(x_tensors)
         self.y = np.concatenate(y_tensors)
         self.x, self.y = shuffle(self.x, self.y, random_state=234950)
-        self.y = self.y.reshape(-1, 1)
         self.n_samples = self.x.shape[0]
 
         self.transform = transform
@@ -35,3 +57,76 @@ class PressureDataset(Dataset):
 
     def __len__(self):
         return self.n_samples
+
+
+class AmbientaDataset(Dataset):
+    directory = "./data/ambienta/"
+    ignored_labels = [
+        "NoPerson",
+        "SitOnEdge",
+        # "SittingOnEdge",
+        "StandingFromBed",
+        "LyingOnBed",
+        # "SittingOnBed",
+        "NotDefined",
+        "Rotation_Supine_RLateral",
+        "Rotation_Right_Prone",
+        "Rotation_Prone_Right",
+        "Rotation_Right_Supine",
+        "Rotation_Supine_Left",
+        "Changing",
+        "Rotation_Supine_LLateral",
+    ]
+
+    def __init__(self, transform=None):
+        x_arrays = []
+        y_arrays = []
+        for file in range(3, 4):
+            # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
+            raw_frames = np.loadtxt(
+                f"{self.directory}{file}.gz", delimiter=",", dtype=np.float32
+            )
+            raw_frames = np.reshape(raw_frames, (-1, 1, 64, 26))
+            raw_frames = np.flip(raw_frames, 2)
+
+            raw_labels = pd.read_csv(f"{self.directory}{file}_labels.csv")
+            self.classes = []
+
+            labels = []
+            frames_to_remove = []
+            for frame_nr, _, label in raw_labels.itertuples():
+                if label not in self.classes:
+                    if label not in self.ignored_labels:
+                        self.classes.append(label)
+                        labels.append(len(self.classes) - 1)
+                    else:
+                        frames_to_remove.append(frame_nr)
+                        labels.append(-1)
+                else:
+                    labels.append(self.classes.index(label))
+
+            raw_frames = np.delete(raw_frames, frames_to_remove, 0)
+            labels = np.delete(labels, frames_to_remove, 0)
+
+            x_arrays.append(raw_frames)
+            y_arrays.append(labels)
+
+        self.x = np.concatenate(x_arrays)
+        self.y = np.concatenate(y_arrays)
+        self.x, self.y = shuffle(self.x, self.y, random_state=234950)
+        self.n_samples = self.x.shape[0]
+
+        self.transform = transform
+
+    def __getitem__(self, index):
+        sample = self.x[index], self.y[index]
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
+
+    def __len__(self):
+        return self.n_samples
+
+
+ds = AmbientaDataset()
+print(len(ds))

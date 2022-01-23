@@ -4,8 +4,8 @@ import numpy as np
 
 class ToTensor:
     def __call__(self, sample):
-        inputs, targets = sample
-        return torch.from_numpy(inputs), torch.from_numpy(targets)
+        image, label = sample
+        return torch.from_numpy(image), label
 
 class Blur:
     def __init__(self, ksize) -> None:
