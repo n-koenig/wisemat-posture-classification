@@ -1,9 +1,10 @@
-import enum
+import random
 import numpy as np
 import pandas as pd
 from functools import reduce
 from sklearn.utils import shuffle
 from torch.utils.data import Dataset
+import matplotlib.pyplot as plt
 
 
 class PhysionetDataset(Dataset):
@@ -34,13 +35,20 @@ class PhysionetDataset(Dataset):
                     dtype=np.float32,
                 )
                 print(raw_frames.shape)
-                x_tensors.append(np.flip(np.reshape(raw_frames, (-1, 1, 64, 32)), 2))
+                raw_frames = np.reshape(raw_frames, (-1, 1, 64, 32))
+                raw_frames = np.flip(raw_frames, 2)
+                x_tensors.append(raw_frames)
                 y_tensors.append(
                     np.full([raw_frames.shape[0]], self.labels_for_file[file - 1])
                 )
                 print(
                     f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset"
                 )
+                for x in range(9):
+                    i = random.randint(0, raw_frames.shape[0]-1)
+                    plt.subplot(3, 3, x+1)
+                    plt.imshow(raw_frames[i][0], origin="lower", cmap="gist_stern")
+                # plt.show()
 
         self.x = np.concatenate(x_tensors)
         self.y = np.concatenate(y_tensors)
@@ -126,7 +134,3 @@ class AmbientaDataset(Dataset):
 
     def __len__(self):
         return self.n_samples
-
-
-ds = AmbientaDataset()
-print(len(ds))
