@@ -3,7 +3,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import torchvision
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, random_split, WeightedRandomSampler
 
 from utils.dataset import PhysionetDataset, AmbientaDataset
 from utils.model import ConvNet
@@ -15,7 +15,7 @@ from utils.transforms import Blur, Close, Erode, ToTensor
 #
 ################
 
-num_epochs = 10
+num_epochs = 3
 learning_rate = 0.001
 batch_size = 100
 train_size_percentage = 0.8
@@ -26,17 +26,26 @@ train_size_percentage = 0.8
 #
 ################
 
-composed_transforms = torchvision.transforms.Compose([ToTensor()])
+composed_transforms = torchvision.transforms.Compose(
+    [Blur((5, 5)), Erode(), Close(), ToTensor()]
+)
 
-dataset = PhysionetDataset(composed_transforms)
-print(dataset.x.shape)
-print(dataset.y.shape)
+train_dataset = PhysionetDataset(composed_transforms, train=False)
+test_dataset = PhysionetDataset(composed_transforms, train=True)
 
-train_size = int(train_size_percentage * len(dataset))
-test_size = len(dataset) - train_size
-train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+# Over- & Undersampling
+_, class_counts = np.unique(train_dataset.y, return_counts=True)
+print(class_counts)
+weights = np.asarray([1.0 / class_counts[c] for c in train_dataset.y])
+train_sampler = WeightedRandomSampler(
+    weights=weights, num_samples=len(weights), replacement=True
+)
 
-train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+# train_size = int(train_size_percentage * len(dataset))
+# test_size = len(dataset) - train_size
+# train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
+
+train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
 test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
 sample, label = train_dataset[0]
@@ -47,11 +56,11 @@ print(sample.shape, label)
 # Machine Learning Part
 #
 ################
-num_classes = len(dataset.classes)
+
+num_classes = len(train_dataset.classes)
 
 # device config
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 model = ConvNet(num_classes)
 
@@ -74,8 +83,10 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
-        if (i+1) % 10 == 0:
-            print(f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}")
+        if (i + 1) % 10 == 0:
+            print(
+                f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}"
+            )
 
 
 with torch.no_grad():
@@ -102,14 +113,14 @@ with torch.no_grad():
                 n_class_correct[label] += 1
             n_class_samples[label] += 1
 
-    acc = 100.0 * n_correct/n_samples
+    acc = 100.0 * n_correct / n_samples
     print(n_class_correct)
     print(n_class_samples)
 
-    print(f'Accuracy of the network: {acc}')
+    print(f"Accuracy of the network: {acc:.4f}")
     for i in range(num_classes):
-        acc = 100.0 * n_class_correct[i]/n_class_samples[i]
-        print(f'Accuracy of {dataset.classes[i]}: {acc}%')
+        acc = 100.0 * n_class_correct[i] / n_class_samples[i]
+        print(f"Accuracy of {test_dataset.classes[i]}: {acc:.4f}%")
 
 
 ################

@@ -5,6 +5,7 @@ from functools import reduce
 from sklearn.utils import shuffle
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
+import progressbar
 
 
 class PhysionetDataset(Dataset):
@@ -21,38 +22,13 @@ class PhysionetDataset(Dataset):
         "Left Body Roll",
     )
 
-    def __init__(self, transform=None):
-        x_tensors = []
-        y_tensors = []
-        for subject in range(1, 2):
-            for file in range(1, 18):
-                # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
-                raw_frames = np.loadtxt(
-                    f"{self.directory}experiment-i/S{subject}/{file}.txt",
-                    delimiter="\t",
-                    usecols=([_ for _ in range(2048)]),
-                    skiprows=2,
-                    dtype=np.float32,
-                )
-                print(raw_frames.shape)
-                raw_frames = np.reshape(raw_frames, (-1, 1, 64, 32))
-                raw_frames = np.flip(raw_frames, 2)
-                x_tensors.append(raw_frames)
-                y_tensors.append(
-                    np.full([raw_frames.shape[0]], self.labels_for_file[file - 1])
-                )
-                print(
-                    f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset"
-                )
-                for x in range(9):
-                    i = random.randint(0, raw_frames.shape[0]-1)
-                    plt.subplot(3, 3, x+1)
-                    plt.imshow(raw_frames[i][0], origin="lower", cmap="gist_stern")
-                # plt.show()
-
-        self.x = np.concatenate(x_tensors)
-        self.y = np.concatenate(y_tensors)
+    def __init__(self, transform=None, train=False):
+        subjects = range(9, 14) if train else range(1, 9)
+        records_per_subject = range(1, 18)
+        self.x, self.y = self.read_files(subjects, records_per_subject)
         self.x, self.y = shuffle(self.x, self.y, random_state=234950)
+        # self.x = self.x * (255/4095.0)
+
         self.n_samples = self.x.shape[0]
 
         self.transform = transform
@@ -65,6 +41,52 @@ class PhysionetDataset(Dataset):
 
     def __len__(self):
         return self.n_samples
+
+    def read_files(self, subjects, records_per_subject):
+        x_tensors = []
+        y_tensors = []
+        widgets = [
+            "Reading Files: ",
+            progressbar.Bar(left="[", right="]", marker="-"),
+            " ",
+            progressbar.Counter(format="%(value)02d/%(max_value)d"),
+            ", ",
+            progressbar.Variable("samples", format='Total Samples: {formatted_value}', width=4),
+        ]
+
+        with progressbar.ProgressBar(
+            max_value=len(subjects) * len(records_per_subject), widgets=widgets
+        ) as bar:
+            for subject in subjects:
+                for file in records_per_subject:
+                    # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
+                    raw_frames = np.loadtxt(
+                        f"{self.directory}experiment-i/S{subject}/{file}.txt",
+                        delimiter="\t",
+                        usecols=([_ for _ in range(2048)]),
+                        skiprows=2,
+                        dtype=np.float32,
+                    )
+                    # print(raw_frames.shape)
+                    raw_frames = np.reshape(raw_frames, (-1, 1, 64, 32))
+                    raw_frames = np.flip(raw_frames, 2)
+                    x_tensors.append(raw_frames)
+                    y_tensors.append(
+                        np.full([raw_frames.shape[0]], self.labels_for_file[file - 1])
+                    )
+                    # print(
+                    #     f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset"
+                    # )
+                    for x in range(9):
+                        i = random.randint(0, raw_frames.shape[0] - 1)
+                        plt.subplot(3, 3, x + 1)
+                        plt.imshow(raw_frames[i][0], origin="lower", cmap="gist_stern")
+                    bar.update(
+                        ((subject - subjects[0]) * len(records_per_subject)) + file,
+                        samples=reduce(lambda count, l: count + len(l), y_tensors, 0),
+                    )
+
+        return np.concatenate(x_tensors), np.concatenate(y_tensors)
 
 
 class AmbientaDataset(Dataset):
