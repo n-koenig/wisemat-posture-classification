@@ -1,17 +1,33 @@
 import random
 import numpy as np
 import pandas as pd
+import cv2
 from functools import reduce
 from sklearn.utils import shuffle
 from torch.utils.data import Dataset
 import matplotlib.pyplot as plt
 import progressbar
+from utils.transforms import Resize
+
+classes = (
+        "Supine",
+        "Lateral_Right",
+        "Lateral_Left",
+        "KneeChest_Right",
+        "KneeChest_Left",
+        "Supine Bed Incline",
+        "Right Body Roll",
+        "Left Body Roll",
+        "SittingOnEdge",
+        "SittingOnBed",
+        "Prone",
+    )
 
 
 class PhysionetDataset(Dataset):
     labels_for_file = [0, 1, 2, 6, 6, 7, 7, 0, 0, 0, 0, 0, 3, 4, 5, 5, 5]
     directory = "./data/physionet/"
-    classes = (
+    classes2 = (
         "Supine",
         "Right",
         "Left",
@@ -26,8 +42,15 @@ class PhysionetDataset(Dataset):
         subjects = range(9, 14) if train else range(1, 9)
         records_per_subject = range(1, 18)
         self.x, self.y = self.read_files(subjects, records_per_subject)
+        # filter = Resize((26, 64), cv2.INTER_LINEAR)
+        # for i in range(0, 6, 2):
+        #     x = random.randint(0, self.x.shape[0] - 1)
+        #     plt.subplot(3, 2, i + 1)
+        #     plt.imshow(self.x[x][0], origin="lower", cmap="gist_stern")
+        #     plt.subplot(3, 2, i + 2)
+        #     plt.imshow(filter(self.x[x][0]), origin="lower", cmap="gist_stern")
+        # plt.show()
         self.x, self.y = shuffle(self.x, self.y, random_state=234950)
-        # self.x = self.x * (255/4095.0)
 
         self.n_samples = self.x.shape[0]
 
@@ -51,7 +74,9 @@ class PhysionetDataset(Dataset):
             " ",
             progressbar.Counter(format="%(value)02d/%(max_value)d"),
             ", ",
-            progressbar.Variable("samples", format='Total Samples: {formatted_value}', width=4),
+            progressbar.Variable(
+                "samples", format="Total Samples: {formatted_value}", width=4
+            ),
         ]
 
         with progressbar.ProgressBar(
@@ -77,10 +102,10 @@ class PhysionetDataset(Dataset):
                     # print(
                     #     f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset"
                     # )
-                    for x in range(9):
-                        i = random.randint(0, raw_frames.shape[0] - 1)
-                        plt.subplot(3, 3, x + 1)
-                        plt.imshow(raw_frames[i][0], origin="lower", cmap="gist_stern")
+                    # for x in range(9):
+                    #     i = random.randint(0, raw_frames.shape[0] - 1)
+                    #     plt.subplot(3, 3, x + 1)
+                    #     plt.imshow(raw_frames[i][0], origin="lower", cmap="gist_stern")
                     bar.update(
                         ((subject - subjects[0]) * len(records_per_subject)) + file,
                         samples=reduce(lambda count, l: count + len(l), y_tensors, 0),
@@ -91,29 +116,19 @@ class PhysionetDataset(Dataset):
 
 class AmbientaDataset(Dataset):
     directory = "./data/ambienta/"
-    classes = ['SittingOnEdge', 'SittingOnBed', 'Supine', 'Lateral_Right', 'Prone', 'Lateral_Left', 'KneeChest_Left',]
-    ignored_labels = [
-        "NoPerson",
-        "SitOnEdge",
-        # "SittingOnEdge",
-        "StandingFromBed",
-        "LyingOnBed",
-        # "SittingOnBed",
-        "NotDefined",
-        "Rotation_Supine_RLateral",
-        "Rotation_Right_Prone",
-        "Rotation_Prone_Right",
-        "Rotation_Right_Supine",
-        "Rotation_Supine_Left",
-        "Changing",
-        "Rotation_Supine_LLateral",
-        "Rotation_Right_LLaternal",
+    classes2 = [
+        "Supine",
+        "SittingOnEdge",
+        "SittingOnBed",
+        "Lateral_Right",
+        "Prone",
+        "Lateral_Left",
+        "KneeChest_Left",
     ]
 
     def __init__(self, transform=None, train=False):
         x_arrays = []
         y_arrays = []
-        self.classes = []
         subjects = range(5, 6) if train else range(3, 5)
         for subject in subjects:
             # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
@@ -121,22 +136,18 @@ class AmbientaDataset(Dataset):
                 f"{self.directory}{subject}.gz", delimiter=",", dtype=np.float32
             )
             raw_frames = np.reshape(raw_frames, (-1, 1, 64, 26))
-            raw_frames = np.flip(raw_frames, 2)
+            # raw_frames = np.flip(raw_frames, 2)
 
             raw_labels = pd.read_csv(f"{self.directory}{subject}_labels.csv")
 
             labels = []
             frames_to_remove = []
             for frame_nr, _, label in raw_labels.itertuples():
-                if label in self.classes:
-                    if label not in self.ignored_labels:
-                        self.classes.append(label)
-                        labels.append(len(self.classes) - 1)
-                    else:
-                        frames_to_remove.append(frame_nr)
-                        labels.append(-1)
+                if label in classes:
+                    labels.append(classes.index(label))
                 else:
-                    labels.append(self.classes.index(label))
+                    frames_to_remove.append(frame_nr)
+                    labels.append(-1)
 
             raw_frames = np.delete(raw_frames, frames_to_remove, 0)
             labels = np.delete(labels, frames_to_remove, 0)

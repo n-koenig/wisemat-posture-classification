@@ -1,13 +1,18 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import torch
+import cv2
 import torch.nn as nn
 import torchvision
-from torch.utils.data import DataLoader, random_split, WeightedRandomSampler
+from torch.utils.data import (
+    DataLoader,
+    WeightedRandomSampler,
+    ConcatDataset,
+)
 
-from utils.dataset import PhysionetDataset, AmbientaDataset
+from utils.dataset import PhysionetDataset, AmbientaDataset, classes
 from utils.model import ConvNet
-from utils.transforms import Blur, Close, Erode, ToTensor
+from utils.transforms import Blur, Close, Erode, ToTensor, Resize, Threshold
 
 ################
 #
@@ -15,10 +20,11 @@ from utils.transforms import Blur, Close, Erode, ToTensor
 #
 ################
 
-num_epochs = 20
-learning_rate = 0.001
+num_epochs = 30
+learning_rate = 0.005
 batch_size = 100
 train_size_percentage = 0.8
+num_classes = len(classes)
 
 ################
 #
@@ -27,20 +33,36 @@ train_size_percentage = 0.8
 ################
 
 composed_transforms = torchvision.transforms.Compose(
-    [Blur((5, 5)), Erode(), Close(), ToTensor()]
+    [
+        Resize((26, 64), cv2.INTER_LINEAR),
+        Blur((5, 5)),
+        Threshold(),
+        Erode(),
+        Close(),
+        ToTensor(),
+    ]
 )
 
-train_dataset = AmbientaDataset(composed_transforms, train=False)
-test_dataset = AmbientaDataset(composed_transforms, train=True)
+train_dataset = ConcatDataset(
+    [
+        PhysionetDataset(composed_transforms, train=False),
+        AmbientaDataset(composed_transforms, train=False),
+    ]
+)
 
-print(train_dataset.classes)
-print(np.max(train_dataset.x))
+test_dataset = ConcatDataset(
+    [
+        PhysionetDataset(composed_transforms, train=True),
+        AmbientaDataset(composed_transforms, train=True),
+    ]
+)
 
 # Over- & Undersampling
-_, class_counts = np.unique(train_dataset.y, return_counts=True)
+labels = np.concatenate([train_dataset.datasets[0].y, train_dataset.datasets[1].y])
+_, class_counts = np.unique(labels, return_counts=True)
 print(class_counts)
 print(class_counts.sum())
-weights = np.asarray([1.0 / class_counts[c] for c in train_dataset.y])
+weights = np.asarray([1.0 / class_counts[c] for c in labels])
 train_sampler = WeightedRandomSampler(
     weights=weights, num_samples=len(weights), replacement=True
 )
@@ -60,8 +82,6 @@ print(sample.shape, label)
 # Machine Learning Part
 #
 ################
-
-num_classes = len(train_dataset.classes)
 
 # device config
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -87,7 +107,7 @@ for epoch in range(num_epochs):
         loss.backward()
         optimizer.step()
 
-        if (i + 1) % 10 == 0:
+        if (i + 1) % 50 == 0:
             print(
                 f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}"
             )
@@ -123,8 +143,12 @@ with torch.no_grad():
 
     print(f"Accuracy of the network: {acc:.4f}")
     for i in range(num_classes):
-        acc = 100.0 * n_class_correct[i] / n_class_samples[i] if n_class_samples[i] != 0.0 else 0.0
-        print(f"Accuracy of {test_dataset.classes[i]}: {acc:.4f}%")
+        acc = (
+            100.0 * n_class_correct[i] / n_class_samples[i]
+            if n_class_samples[i] != 0.0
+            else 0.0
+        )
+        print(f"Accuracy of {classes[i]}: {acc:.4f}%")
 
 
 ################
