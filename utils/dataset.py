@@ -91,6 +91,7 @@ class PhysionetDataset(Dataset):
 
 class AmbientaDataset(Dataset):
     directory = "./data/ambienta/"
+    classes = ['SittingOnEdge', 'SittingOnBed', 'Supine', 'Lateral_Right', 'Prone', 'Lateral_Left', 'KneeChest_Left',]
     ignored_labels = [
         "NoPerson",
         "SitOnEdge",
@@ -106,26 +107,28 @@ class AmbientaDataset(Dataset):
         "Rotation_Supine_Left",
         "Changing",
         "Rotation_Supine_LLateral",
+        "Rotation_Right_LLaternal",
     ]
 
-    def __init__(self, transform=None):
+    def __init__(self, transform=None, train=False):
         x_arrays = []
         y_arrays = []
-        for file in range(3, 4):
+        self.classes = []
+        subjects = range(5, 6) if train else range(3, 5)
+        for subject in subjects:
             # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
             raw_frames = np.loadtxt(
-                f"{self.directory}{file}.gz", delimiter=",", dtype=np.float32
+                f"{self.directory}{subject}.gz", delimiter=",", dtype=np.float32
             )
             raw_frames = np.reshape(raw_frames, (-1, 1, 64, 26))
             raw_frames = np.flip(raw_frames, 2)
 
-            raw_labels = pd.read_csv(f"{self.directory}{file}_labels.csv")
-            self.classes = []
+            raw_labels = pd.read_csv(f"{self.directory}{subject}_labels.csv")
 
             labels = []
             frames_to_remove = []
             for frame_nr, _, label in raw_labels.itertuples():
-                if label not in self.classes:
+                if label in self.classes:
                     if label not in self.ignored_labels:
                         self.classes.append(label)
                         labels.append(len(self.classes) - 1)

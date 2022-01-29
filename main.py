@@ -15,7 +15,7 @@ from utils.transforms import Blur, Close, Erode, ToTensor
 #
 ################
 
-num_epochs = 3
+num_epochs = 20
 learning_rate = 0.001
 batch_size = 100
 train_size_percentage = 0.8
@@ -30,12 +30,16 @@ composed_transforms = torchvision.transforms.Compose(
     [Blur((5, 5)), Erode(), Close(), ToTensor()]
 )
 
-train_dataset = PhysionetDataset(composed_transforms, train=False)
-test_dataset = PhysionetDataset(composed_transforms, train=True)
+train_dataset = AmbientaDataset(composed_transforms, train=False)
+test_dataset = AmbientaDataset(composed_transforms, train=True)
+
+print(train_dataset.classes)
+print(np.max(train_dataset.x))
 
 # Over- & Undersampling
 _, class_counts = np.unique(train_dataset.y, return_counts=True)
 print(class_counts)
+print(class_counts.sum())
 weights = np.asarray([1.0 / class_counts[c] for c in train_dataset.y])
 train_sampler = WeightedRandomSampler(
     weights=weights, num_samples=len(weights), replacement=True
@@ -119,7 +123,7 @@ with torch.no_grad():
 
     print(f"Accuracy of the network: {acc:.4f}")
     for i in range(num_classes):
-        acc = 100.0 * n_class_correct[i] / n_class_samples[i]
+        acc = 100.0 * n_class_correct[i] / n_class_samples[i] if n_class_samples[i] != 0.0 else 0.0
         print(f"Accuracy of {test_dataset.classes[i]}: {acc:.4f}%")
 
 
