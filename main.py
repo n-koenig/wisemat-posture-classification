@@ -12,7 +12,10 @@ from torch.utils.data import (
 
 from utils.dataset import PhysionetDataset, AmbientaDataset, classes
 from utils.model import ConvNet
-from utils.transforms import Blur, Close, Erode, ToTensor, Resize, Threshold
+from utils.transforms import Blur, Close, Erode, ToTensor, Resize, Threshold, Normalize, EqualizeHist
+from sklearn.metrics import confusion_matrix
+import pandas as pd
+from utils.plot_cm import plot_confusion_matrix
 
 ################
 #
@@ -35,10 +38,10 @@ num_classes = len(classes)
 composed_transforms = torchvision.transforms.Compose(
     [
         Resize((26, 64), cv2.INTER_LINEAR),
+        Normalize(),
+        EqualizeHist(),
         Blur((5, 5)),
-        Threshold(),
         Erode(),
-        Close(),
         ToTensor(),
     ]
 )
@@ -56,6 +59,8 @@ test_dataset = ConcatDataset(
         AmbientaDataset(composed_transforms, train=True),
     ]
 )
+print(f"Number of training samples: {len(train_dataset)}")
+print(f"Number of testing samples: {len(test_dataset)}")
 
 # Over- & Undersampling
 labels = np.concatenate([train_dataset.datasets[0].y, train_dataset.datasets[1].y])
@@ -118,13 +123,17 @@ with torch.no_grad():
     n_samples = 0
     n_class_correct = [0 for i in range(num_classes)]
     n_class_samples = [0 for i in range(num_classes)]
+    predlist = []
+    lbllist = []
     for images, labels in test_loader:
+        lbllist.append(labels.numpy())
         images = images.to(device)
         labels = labels.to(device)
         outputs = model(images)
         # print(outputs)
 
         _, predictions = torch.max(outputs, 1)
+        predlist.append(predictions.numpy())
         # print(_, predictions)
         n_samples += labels.size(0)
         n_correct += (predictions == labels).sum().item()
@@ -150,6 +159,10 @@ with torch.no_grad():
         )
         print(f"Accuracy of {classes[i]}: {acc:.4f}%")
 
+    conf_mat = confusion_matrix(np.concatenate(lbllist), np.concatenate(predlist))
+    plt.figure(figsize=(10,10))
+    plot_confusion_matrix(conf_mat, classes, normalize=True)
+    plt.show()
 
 ################
 #
@@ -159,11 +172,11 @@ with torch.no_grad():
 ################
 
 # Transform Images back to arrays to visualize them with maptlotlib because it has better visualization
-frame = np.asarray(sample[0])
+# frame = np.asarray(sample[0])
 
 # Visualize 2D Pressure Image as heatmap, cmap specifies the color scheme for the plot
-plt.subplot(2, 3, 1)
-plt.imshow(frame, origin="lower", cmap="gist_stern")
+# plt.subplot(2, 3, 1)
+# plt.imshow(frame, origin="lower", cmap="gist_stern")
 # plt.subplot(1, 2, 2)
 # plt.imshow(frame_blur, origin="lower", cmap="gist_stern")
 # plt.show()

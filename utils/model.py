@@ -6,14 +6,15 @@ class ConvNet(nn.Module):
         super(ConvNet, self).__init__()
         self.conv1 = nn.Conv2d(1, 6, 5)
         self.pool = nn.MaxPool2d(2, 2)
+        self.dropout = nn.Dropout2d(0.1)
         self.conv2 = nn.Conv2d(6, 16, 5)
         self.fc1 = nn.Linear(16*13*3, 120)
         self.fc2 = nn.Linear(self.fc1.out_features, 84)
         self.fc3 = nn.Linear(self.fc2.out_features, output_size)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))
-        x = self.pool(F.relu(self.conv2(x)))
+        x = self.pool(self.dropout(F.relu(self.conv1(x))))
+        x = self.pool(self.dropout(F.relu(self.conv2(x))))
         x = x.view(-1, 16*13*3)
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
