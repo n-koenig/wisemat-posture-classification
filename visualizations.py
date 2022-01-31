@@ -49,13 +49,13 @@ trans = [
 
 trans_labels = [
     "Original",
-    "Resize",
-    "Normalize",
-    "Equalize Histogram",
-    "Gaussian Blur",
-    "Erosion",
-    "Erosion",
-    "Erosion",
+    "Resized",
+    "Normalized",
+    "Equalized Histogram",
+    "Gaussian Blurred",
+    "Eroded",
+    "Eroded",
+    "Eroded",
 ]
 
 transform1 = torchvision.transforms.Compose(trans[:1])
@@ -70,11 +70,54 @@ num_plots_per_row = 4
 images_per_dataset = 1
 
 samples = [train_dataset1[128], train_dataset2[128]]
+
+# fig = plt.figure(figsize=(4, 2))
+# subfigs = fig.subfigures(1, 2, wspace=0)
+
+# subfigs[0].suptitle('Original', fontsize='x-large')
+# axsLeft = subfigs[0].subplots(2, 2)
+# # subfigs[0].set_facecolor('0.75')
+# # subfigs[0].colorbar(pc, shrink=0.6, ax=axsLeft, location='bottom')
+# for nn, row in enumerate(axsLeft):
+#     sample = samples[0 if nn == 0 else 1]
+#     if nn == 0:
+#         row[0].set_ylabel('Physionet')
+#     else:
+#         row[0].set_ylabel('Ambienta')
+#     transform = torchvision.transforms.Compose([])
+#     row[0].imshow(transform(sample)[0][0], origin="lower", cmap="gist_stern")
+#     row[0].set_xticks([], [])
+#     row[0].set_yticks([], [])
+#     if nn == 0:
+#         row[0].set_title("Image")
+#         row[1].set_title("Histogram")
+#     row[1].hist(transform(sample)[0][0].ravel(), bins=50, color="#777777")
+
+# subfigs[1].suptitle('Normalized Values', fontsize='x-large')
+# axsRight = subfigs[1].subplots(2, 2)
+# for nn, row in enumerate(axsRight):
+#     transform = torchvision.transforms.Compose(trans[:2])
+#     sample = samples[0 if nn == 0 else 1]
+#     row[0].imshow(transform(sample)[0][0], origin="lower", cmap="gist_stern")
+#     row[0].set_xticks([], [])
+#     row[0].set_yticks([], [])
+#     if nn == 0:
+#         row[0].set_title("Image")
+#         row[1].set_title("Histogram")
+#     row[1].hist(transform(sample)[0][0].ravel(), bins=50, color="#777777")
+
+# subfigs[1].set_facecolor('0.85') # Changes the background of the subfigure
+# subfigs[1].colorbar(pc, shrink=0.6, ax=axsRight)
+
+# fig.suptitle('Figure suptitle', fontsize='xx-large')
+
 fig, axs = plt.subplots(2, 2)
 for sample, row, row_nr in zip(samples, axs, range(len(axs))):
     for i, ax in enumerate(row):
         transform = torchvision.transforms.Compose(trans[:0 if i == 0 else 5])
         ax.imshow(transform(sample)[0][0], origin="lower", cmap="gist_stern")
+        ax.set_xticks([], [])
+        ax.set_yticks([], [])
         if row_nr == 0:
             ax.set_title(trans_labels[0 if i == 0 else 5])
         if i == 0 and row_nr == 0:

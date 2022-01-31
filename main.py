@@ -12,10 +12,19 @@ from torch.utils.data import (
 
 from utils.dataset import PhysionetDataset, AmbientaDataset, classes
 from utils.model import ConvNet
-from utils.transforms import Blur, Close, Erode, ToTensor, Resize, Threshold, Normalize, EqualizeHist
+from utils.transforms import (
+    Blur,
+    Close,
+    Erode,
+    ToTensor,
+    Resize,
+    Threshold,
+    Normalize,
+    EqualizeHist,
+)
 from sklearn.metrics import confusion_matrix
 import pandas as pd
-from utils.plot_cm import plot_confusion_matrix
+from utils.plot_cm import plot_confusion_matrix, plot_class_weights
 
 ################
 #
@@ -63,15 +72,35 @@ print(f"Number of training samples: {len(train_dataset)}")
 print(f"Number of testing samples: {len(test_dataset)}")
 
 # Over- & Undersampling
-labels = np.concatenate([train_dataset.datasets[0].y, train_dataset.datasets[1].y])
-_, class_counts = np.unique(labels, return_counts=True)
-print(class_counts)
-print(class_counts.sum())
-weights = np.asarray([1.0 / class_counts[c] for c in labels])
+train_labels = np.concatenate(
+    [train_dataset.datasets[0].y, train_dataset.datasets[1].y]
+)
+test_labels = np.concatenate([test_dataset.datasets[0].y, test_dataset.datasets[1].y])
+_, train_class_counts = np.unique(train_labels, return_counts=True)
+_, test_class_counts = np.unique(test_labels, return_counts=True)
+
+plot_class_weights(
+    [
+        train_class_counts / train_class_counts.sum(),
+        test_class_counts / test_class_counts.sum(),
+    ],
+    classes,
+    [
+        "Training Data Class Weights",
+        "Test Data Class Weights",
+    ],
+)
+plt.show()
+
+print(train_class_counts / train_class_counts.sum())
+print(test_class_counts / test_class_counts.sum())
+print(train_class_counts.sum())
+print(test_class_counts.sum())
+weights = np.asarray([1.0 / train_class_counts[c] for c in train_labels])
 train_sampler = WeightedRandomSampler(
     weights=weights, num_samples=len(weights), replacement=True
 )
-
+exit()
 # train_size = int(train_size_percentage * len(dataset))
 # test_size = len(dataset) - train_size
 # train_dataset, test_dataset = random_split(dataset, [train_size, test_size])
@@ -160,7 +189,7 @@ with torch.no_grad():
         print(f"Accuracy of {classes[i]}: {acc:.4f}%")
 
     conf_mat = confusion_matrix(np.concatenate(lbllist), np.concatenate(predlist))
-    plt.figure(figsize=(10,10))
+    plt.figure(figsize=(10, 10))
     plot_confusion_matrix(conf_mat, classes, normalize=True)
     plt.show()
 
