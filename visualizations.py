@@ -6,7 +6,7 @@ import cv2
 import random
 import torchvision
 
-from utils.dataset import PhysionetDataset, AmbientaDataset
+from utils.dataset import PhysionetDataset, AmbientaDataset, classes
 from utils.transforms import (
     Blur,
     Close,
@@ -43,8 +43,7 @@ trans = [
     EqualizeHist(),
     Blur((5, 5)),
     Erode(),
-    Erode(),
-    Erode(),
+    Resize((52, 128), cv2.INTER_LINEAR),
 ]
 
 trans_labels = [
@@ -69,7 +68,7 @@ transform7 = torchvision.transforms.Compose(trans[:7])
 num_plots_per_row = 4
 images_per_dataset = 1
 
-samples = [train_dataset1[128], train_dataset2[128]]
+# samples = [train_dataset1[128], train_dataset2[128]]
 
 # fig = plt.figure(figsize=(4, 2))
 # subfigs = fig.subfigures(1, 2, wspace=0)
@@ -111,23 +110,63 @@ samples = [train_dataset1[128], train_dataset2[128]]
 
 # fig.suptitle('Figure suptitle', fontsize='xx-large')
 
-fig, axs = plt.subplots(2, 2)
-for sample, row, row_nr in zip(samples, axs, range(len(axs))):
+
+prone1 = []
+for image, label in train_dataset2:
+    if label == classes.index("Prone"):
+        prone1.append(
+            (
+                image,
+                label,
+            )
+        )
+    if len(prone1) == 8:
+        break
+
+rlateral1 = []
+for image, label in train_dataset1:
+    if label == classes.index("Lateral_Left"):
+        rlateral1.append(
+            (
+                image,
+                label,
+            )
+        )
+    if len(rlateral1) == 8:
+        break
+
+rlateral2 = []
+for image, label in train_dataset2:
+    if label == classes.index("Lateral_Left"):
+        rlateral2.append(
+            (
+                image,
+                label,
+            )
+        )
+    if len(rlateral2) == 8:
+        break
+
+samples = [prone1, rlateral1, rlateral2]
+
+fig, axs = plt.subplots(3, 8)
+for row_samples, row, row_nr in zip(samples, axs, range(len(axs))):
     for i, ax in enumerate(row):
-        transform = torchvision.transforms.Compose(trans[:0 if i == 0 else 1])
+        sample = row_samples[i]
+        transform = torchvision.transforms.Compose(trans)
         ax.imshow(transform(sample)[0][0], origin="lower", cmap="gist_stern")
-        if (i == 0 and row_nr == 0):
-            ax.set_xticks(range(0, 31, 10), range(0, 31, 10))
-        else:
-            ax.set_xticks(range(0, 26, 10), range(0, 26, 10))
+        # if (i == 0 and row_nr == 0):
+        #     ax.set_xticks(range(0, 31, 10), range(0, 31, 10))
+        # else:
+        #     ax.set_xticks(range(0, 26, 10), range(0, 26, 10))
+        ax.set_xticks([], [])
+        ax.set_yticks([], [])
         if row_nr == 0:
             ax.set_title(trans_labels[0 if i == 0 else 1])
-        if i == 0 and row_nr == 0:
-            ax.set_ylabel("Physionet")
-        elif i == 0 and row_nr == 1:
-            ax.set_ylabel("Ambienta")
-        else:
-            pass
+
+axs[0][0].set_ylabel("Ambienta")
+axs[1][0].set_ylabel("Physionet")
+axs[2][0].set_ylabel("Ambienta")
 
 plt.show()
 

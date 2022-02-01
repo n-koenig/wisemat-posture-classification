@@ -94,7 +94,7 @@ class PhysionetDataset(Dataset):
                     )
                     # print(raw_frames.shape)
                     raw_frames = np.reshape(raw_frames, (-1, 1, 64, 32))
-                    raw_frames = np.flip(raw_frames, 2)
+                    raw_frames = np.flip(raw_frames, (2, 3))
                     x_tensors.append(raw_frames)
                     y_tensors.append(
                         np.full([raw_frames.shape[0]], self.labels_for_file[file - 1])
@@ -136,7 +136,6 @@ class AmbientaDataset(Dataset):
                 f"{self.directory}{subject}.gz", delimiter=",", dtype=np.float32
             )
             raw_frames = np.reshape(raw_frames, (-1, 1, 64, 26))
-            # raw_frames = np.flip(raw_frames, 2)
 
             raw_labels = pd.read_csv(f"{self.directory}{subject}_labels.csv")
 
