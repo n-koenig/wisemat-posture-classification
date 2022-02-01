@@ -52,9 +52,14 @@ def plot_comparing_confusion_matrix(
         print("Confusion matrix, without normalization")
 
     cm = compare_cm - base_cm
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        if i != j:
+            cm[i, j] *= -1
 
     plt.figure(figsize=(10, 10))
-    cmap = mpl.colors.LinearSegmentedColormap.from_list("rg", ["r", "w", "g"], N=256)
+    cmap = mpl.colors.LinearSegmentedColormap.from_list(
+        "rg", ["r", "r", "#00000000", "g", "g"], N=256
+    )
     ax = plt.gca()
     im = ax.imshow(cm, interpolation="nearest", cmap=cmap, vmin=-1, vmax=1)
     plt.title(title)
@@ -65,12 +70,15 @@ def plot_comparing_confusion_matrix(
     fmt = ".2f" if normalize else "d"
     thresh = cm.max() / 2.0
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        n = cm[i, j] if i == j else cm[i, j] * -1
+        number = float(int(n)) if int(n * 100) == 0 else n
         plt.text(
             j,
             i,
-            f"{'-' if cm[i, j] < 0 else '+'}{format(cm[i, j], fmt)}",
+            f"{'+' if number > 0 else ''}{format(number, fmt)}",
             horizontalalignment="center",
-            color="white" if cm[i, j] > thresh else "black",
+            color="black",
+            weight="bold" if i == j else "normal",
         )
 
     plt.ylabel("True label")

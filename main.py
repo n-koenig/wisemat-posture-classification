@@ -112,6 +112,8 @@ def main():
     with open('benchmarks/no_image_filters.npy', 'wb') as f:
         np.save(f, conf_mat_sum)
 
+
+
     plot_comparing_confusion_matrix(conf_mats[0], conf_mats[1], classes, normalize=True)
     plt.show()
 
