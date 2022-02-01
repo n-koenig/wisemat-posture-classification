@@ -23,7 +23,7 @@ from utils.transforms import (
     EqualizeHist,
 )
 from sklearn.metrics import confusion_matrix
-from utils.plots import plot_confusion_matrix, plot_class_weights
+from utils.plots import plot_confusion_matrix, plot_comparing_confusion_matrix, plot_class_weights
 
 ################
 #
@@ -78,7 +78,9 @@ def main():
     train_labels = np.concatenate(
         [train_dataset.datasets[0].y, train_dataset.datasets[1].y]
     )
-    test_labels = np.concatenate([test_dataset.datasets[0].y, test_dataset.datasets[1].y])
+    test_labels = np.concatenate(
+        [test_dataset.datasets[0].y, test_dataset.datasets[1].y]
+    )
     _, train_class_counts = np.unique(train_labels, return_counts=True)
     _, test_class_counts = np.unique(test_labels, return_counts=True)
 
@@ -99,27 +101,30 @@ def main():
     train_sampler = WeightedRandomSampler(
         weights=weights, num_samples=len(weights), replacement=True
     )
-    
+
+
     conf_mat_sum = np.zeros((11, 11))
+    conf_mats = []
     for i in range(num_trainings):
         conf_mat, acc = train_model(train_dataset, test_dataset, train_sampler)
         print(f"Accuracy of {i+1}. Network: {acc:.4f}")
+        conf_mats.append(conf_mat)
         conf_mat_sum += conf_mat
 
-    print(conf_mat_sum)
-    with open('baseline.npy', 'wb') as f:
+
+    # print(conf_mat_sum)
+    with open("baseline.npy", "wb") as f:
         np.save(f, conf_mat_sum)
 
-    # with open('test.npy', 'rb') as f:
-    #     a = np.load(f)
 
-    plot_confusion_matrix(conf_mat_sum, classes, normalize=True)
+    plot_comparing_confusion_matrix(conf_mats[0], conf_mats[1], classes, normalize=True)
     plt.show()
 
 
-
 def train_model(train_dataset, test_dataset, train_sampler):
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, sampler=train_sampler
+    )
     test_loader = DataLoader(test_dataset, batch_size=batch_size)
 
     ################
@@ -157,7 +162,6 @@ def train_model(train_dataset, test_dataset, train_sampler):
                     f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}"
                 )
 
-
     with torch.no_grad():
         n_correct = 0
         n_samples = 0
@@ -178,7 +182,7 @@ def train_model(train_dataset, test_dataset, train_sampler):
         acc = 100.0 * n_correct / n_samples
 
         return confusion_matrix(np.concatenate(lbllist), np.concatenate(predlist)), acc
-        
-        
+
+
 if __name__ == "__main__":
     main()

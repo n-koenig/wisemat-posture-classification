@@ -1,5 +1,6 @@
 import itertools
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
@@ -13,7 +14,6 @@ def plot_confusion_matrix(
     else:
         print("Confusion matrix, without normalization")
 
-    print(cm)
     plt.figure(figsize=(10, 10))
     ax = plt.gca()
     im = ax.imshow(cm, interpolation="nearest", cmap=cmap)
@@ -38,6 +38,47 @@ def plot_confusion_matrix(
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.25)
     plt.colorbar(im, cax=cax)
+    plt.tight_layout()
+
+
+def plot_comparing_confusion_matrix(
+    base_cm, compare_cm, classes, normalize=False, title="Confusion matrix"
+):
+    if normalize:
+        base_cm = base_cm.astype("float") / base_cm.sum(axis=1)[:, np.newaxis]
+        compare_cm = compare_cm.astype("float") / compare_cm.sum(axis=1)[:, np.newaxis]
+        print("Normalized confusion matrix")
+    else:
+        print("Confusion matrix, without normalization")
+
+    cm = compare_cm - base_cm
+
+    plt.figure(figsize=(10, 10))
+    cmap = mpl.colors.LinearSegmentedColormap.from_list("rg", ["r", "w", "g"], N=256)
+    ax = plt.gca()
+    im = ax.imshow(cm, interpolation="nearest", cmap=cmap, vmin=-1, vmax=1)
+    plt.title(title)
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = ".2f" if normalize else "d"
+    thresh = cm.max() / 2.0
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(
+            j,
+            i,
+            f"{'-' if cm[i, j] < 0 else '+'}{format(cm[i, j], fmt)}",
+            horizontalalignment="center",
+            color="white" if cm[i, j] > thresh else "black",
+        )
+
+    plt.ylabel("True label")
+    plt.xlabel("Predicted label")
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.25)
+    norm = mpl.colors.Normalize(vmin=-1, vmax=1)
+    plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax)
     plt.tight_layout()
 
 
