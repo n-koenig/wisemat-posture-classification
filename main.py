@@ -49,9 +49,6 @@ def main():
         [
             Resize((26, 64), cv2.INTER_LINEAR),
             Normalize(),
-            EqualizeHist(),
-            Blur((5, 5)),
-            Erode(),
             Resize((52, 128), cv2.INTER_LINEAR),
             ToTensor(),
         ]
@@ -111,11 +108,9 @@ def main():
         conf_mats.append(conf_mat)
         conf_mat_sum += conf_mat
 
-
     # print(conf_mat_sum)
-    with open("baseline.npy", "wb") as f:
+    with open('benchmarks/no_image_filters.npy', 'wb') as f:
         np.save(f, conf_mat_sum)
-
 
     plot_comparing_confusion_matrix(conf_mats[0], conf_mats[1], classes, normalize=True)
     plt.show()
