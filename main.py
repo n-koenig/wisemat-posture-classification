@@ -49,6 +49,7 @@ def main():
         [
             Resize((26, 64), cv2.INTER_LINEAR),
             Normalize(),
+            EqualizeHist(),
             Resize((52, 128), cv2.INTER_LINEAR),
             ToTensor(),
         ]
@@ -108,8 +109,8 @@ def main():
         conf_mats.append(conf_mat)
         conf_mat_sum += conf_mat
 
-    # print(conf_mat_sum)
-    with open('benchmarks/no_image_filters.npy', 'wb') as f:
+    print(conf_mat_sum)
+    with open('benchmarks/resize_normalize_equalize_resize.npy', 'wb') as f:
         np.save(f, conf_mat_sum)
 
 
