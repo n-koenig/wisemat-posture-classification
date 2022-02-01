@@ -23,7 +23,7 @@ class Blur:
 class Threshold:
     def __call__(self, sample):
         image, label = sample
-        th, frame_thresh = cv2.threshold(image, np.average(image), 1, cv2.THRESH_TOZERO)
+        th, frame_thresh = cv2.threshold(image, np.median(image), 1, cv2.THRESH_TOZERO)
         return frame_thresh, label
 
 
