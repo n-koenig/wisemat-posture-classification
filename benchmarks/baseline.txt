@@ -1,0 +1,20 @@
+num_trainings = 10
+num_epochs = 20
+learning_rate = 0.005
+batch_size = 100
+
+default-model (nach paper)
+
+composed_transforms = torchvision.transforms.Compose(
+        [
+            Resize((26, 64), cv2.INTER_LINEAR),
+            Normalize(),
+            EqualizeHist(),
+            Blur((5, 5)),
+            Erode(),
+            Resize((52, 128), cv2.INTER_LINEAR),
+            ToTensor(),
+        ]
+    )
+
+default datensplit
