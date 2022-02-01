@@ -50,7 +50,7 @@ class PhysionetDataset(Dataset):
         #     plt.subplot(3, 2, i + 2)
         #     plt.imshow(filter(self.x[x][0]), origin="lower", cmap="gist_stern")
         # plt.show()
-        self.x, self.y = shuffle(self.x, self.y, random_state=234950)
+        # self.x, self.y = shuffle(self.x, self.y, random_state=234950)
 
         self.n_samples = self.x.shape[0]
 
@@ -156,7 +156,7 @@ class AmbientaDataset(Dataset):
 
         self.x = np.concatenate(x_arrays)
         self.y = np.concatenate(y_arrays)
-        self.x, self.y = shuffle(self.x, self.y, random_state=234950)
+        # self.x, self.y = shuffle(self.x, self.y, random_state=234950)
         self.n_samples = self.x.shape[0]
 
         self.transform = transform
