@@ -10,6 +10,7 @@ composed_transforms = torchvision.transforms.Compose(
             Resize((26, 64), cv2.INTER_LINEAR),
             Normalize(),
             EqualizeHist(),
+            Blur((5, 5)),
             Resize((52, 128), cv2.INTER_LINEAR),
             ToTensor(),
         ]
