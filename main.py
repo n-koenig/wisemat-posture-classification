@@ -22,8 +22,12 @@ from utils.transforms import (
     Normalize,
     EqualizeHist,
 )
-from sklearn.metrics import confusion_matrix
-from utils.plots import plot_confusion_matrix, plot_comparing_confusion_matrix, plot_class_weights
+from sklearn.metrics import confusion_matrix, f1_score
+from utils.plots import (
+    plot_confusion_matrix,
+    plot_comparing_confusion_matrix,
+    plot_class_weights,
+)
 
 ################
 #
@@ -31,13 +35,32 @@ from utils.plots import plot_confusion_matrix, plot_comparing_confusion_matrix, 
 #
 ################
 
-num_trainings = 10
-num_epochs = 20
+num_trainings = 1
+num_epochs = 1
 learning_rate = 0.005
-batch_size = 100
+batch_size = 1000
 num_classes = len(classes)
 
+
 def main():
+
+    conf_mat = None
+    conf_mat2 = None
+    with open("benchmarks/baseline.npy", "rb") as f:
+        conf_mat = np.load(f)
+    with open("benchmarks/normalize_equalize.npy", "rb") as f:
+        conf_mat2 = np.load(f)
+    plot_comparing_confusion_matrix(conf_mat, conf_mat2, classes, normalize=True)
+    plt.savefig("demo.png", transparent=True)
+    # plt.show()
+
+    # print(conf_mat)
+
+    f1_scores = f1_scores_from_conf_mat(conf_mat)
+
+    # print(f1_scores)
+
+    exit()
 
     ################
     #
@@ -100,7 +123,6 @@ def main():
         weights=weights, num_samples=len(weights), replacement=True
     )
 
-
     conf_mat_sum = np.zeros((11, 11))
     conf_mats = []
     for i in range(num_trainings):
@@ -109,14 +131,15 @@ def main():
         conf_mats.append(conf_mat)
         conf_mat_sum += conf_mat
 
-    print(conf_mat_sum)
-    with open('benchmarks/resize_normalize_equalize_resize.npy', 'wb') as f:
+    f1_scores = f1_scores_from_conf_mat(conf_mat_sum)
+    mean_score = sum(f1_scores) / len(f1_scores)
+
+    # print(conf_mat_sum)
+    with open("benchmarks/resize_normalize_equalize_resize.npy", "wb") as f:
         np.save(f, conf_mat_sum)
 
-
-
-    plot_comparing_confusion_matrix(conf_mats[0], conf_mats[1], classes, normalize=True)
-    plt.show()
+    # plot_comparing_confusion_matrix(conf_mats[0], conf_mats[1], classes, normalize=True)
+    # plt.show()
 
 
 def train_model(train_dataset, test_dataset, train_sampler):
@@ -179,7 +202,21 @@ def train_model(train_dataset, test_dataset, train_sampler):
 
         acc = 100.0 * n_correct / n_samples
 
+        # print(f1_score(np.concatenate(lbllist), np.concatenate(predlist), average='macro'))
+        # print(f1_score(np.concatenate(lbllist), np.concatenate(predlist), average=None))
+
         return confusion_matrix(np.concatenate(lbllist), np.concatenate(predlist)), acc
+
+
+def f1_scores_from_conf_mat(cm):
+    f1_scores = []
+    for i in range(cm.shape[0]):
+        precision = cm[i, i] / sum(cm[:, i]) if sum(cm[:, i]) else 0
+        recall = cm[i, i] / sum(cm[i, :]) if sum(cm[i, :]) else 0
+        f1_score = 2 * (precision * recall) / (precision + recall) if (precision + recall) else 0
+        f1_scores.append(f1_score)
+
+    return f1_scores
 
 
 if __name__ == "__main__":
