@@ -29,10 +29,10 @@ composed_transforms = torchvision.transforms.Compose(
     ]
 )
 
-train_dataset1 = PhysionetDataset(composed_transforms, train=False)
-train_dataset2 = AmbientaDataset(composed_transforms, train=False)
-test_dataset1 = PhysionetDataset(composed_transforms, train=True)
-test_dataset2 = AmbientaDataset(composed_transforms, train=True)
+train_dataset1 = PhysionetDataset(composed_transforms, train=True)
+train_dataset2 = AmbientaDataset(composed_transforms, train=True)
+test_dataset1 = PhysionetDataset(composed_transforms, train=False)
+test_dataset2 = AmbientaDataset(composed_transforms, train=False)
 print(len(train_dataset1))
 print(len(train_dataset2))
 print(len(test_dataset1))

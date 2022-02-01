@@ -39,7 +39,7 @@ class PhysionetDataset(Dataset):
     )
 
     def __init__(self, transform=None, train=False):
-        subjects = range(9, 14) if train else range(1, 9)
+        subjects = range(1, 9) if train else range(9, 14)
         records_per_subject = range(1, 18)
         self.x, self.y = self.read_files(subjects, records_per_subject)
         # filter = Resize((26, 64), cv2.INTER_LINEAR)
@@ -129,7 +129,7 @@ class AmbientaDataset(Dataset):
     def __init__(self, transform=None, train=False):
         x_arrays = []
         y_arrays = []
-        subjects = range(5, 6) if train else range(3, 5)
+        subjects = range(3, 5) if train else range(5, 6)
         for subject in subjects:
             # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
             raw_frames = np.loadtxt(

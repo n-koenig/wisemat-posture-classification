@@ -32,7 +32,7 @@ from utils.plots import plot_confusion_matrix, plot_class_weights
 #
 ################
 
-num_epochs = 3
+num_epochs = 10
 learning_rate = 0.005
 batch_size = 100
 train_size_percentage = 0.8
@@ -51,21 +51,22 @@ composed_transforms = torchvision.transforms.Compose(
         EqualizeHist(),
         Blur((5, 5)),
         Erode(),
+        Resize((52, 128), cv2.INTER_LINEAR),
         ToTensor(),
     ]
 )
 
 train_dataset = ConcatDataset(
     [
-        PhysionetDataset(composed_transforms, train=False),
-        AmbientaDataset(composed_transforms, train=False),
+        PhysionetDataset(composed_transforms, train=True),
+        AmbientaDataset(composed_transforms, train=True),
     ]
 )
 
 test_dataset = ConcatDataset(
     [
-        PhysionetDataset(composed_transforms, train=True),
-        AmbientaDataset(composed_transforms, train=True),
+        PhysionetDataset(composed_transforms, train=False),
+        AmbientaDataset(composed_transforms, train=False),
     ]
 )
 
@@ -97,7 +98,6 @@ weights = np.asarray([1.0 / train_class_counts[c] for c in train_labels])
 train_sampler = WeightedRandomSampler(
     weights=weights, num_samples=len(weights), replacement=True
 )
-# exit()
 
 train_loader = DataLoader(train_dataset, batch_size=batch_size, sampler=train_sampler)
 test_loader = DataLoader(test_dataset, batch_size=batch_size)
@@ -114,7 +114,7 @@ print(sample.shape, label)
 # device config
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-model = ConvNet(num_classes)
+model = ConvNet(num_classes).to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
@@ -156,7 +156,7 @@ with torch.no_grad():
         # print(outputs)
 
         _, predictions = torch.max(outputs, 1)
-        predlist.append(predictions.numpy())
+        predlist.append(predictions.cpu().numpy())
         # print(_, predictions)
         n_samples += labels.size(0)
         n_correct += (predictions == labels).sum().item()

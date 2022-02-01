@@ -36,7 +36,7 @@ def plot_confusion_matrix(
     plt.ylabel("True label")
     plt.xlabel("Predicted label")
     divider = make_axes_locatable(ax)
-    cax = divider.append_axes("right", size="5%", pad=0.05)
+    cax = divider.append_axes("right", size="5%", pad=0.25)
     plt.colorbar(im, cax=cax)
     plt.tight_layout()
 
