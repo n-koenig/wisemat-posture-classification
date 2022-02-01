@@ -1,10 +1,11 @@
 import itertools
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # from https://deeplizard.com/learn/video/0LhiS6yu2qQ
 def plot_confusion_matrix(
-    cm, classes, normalize=False, title="Confusion matrix", cmap=plt.cm.Blues
+    cm, classes, normalize=False, title="Confusion matrix", cmap=plt.cm.Oranges
 ):
     if normalize:
         cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
@@ -13,9 +14,10 @@ def plot_confusion_matrix(
         print("Confusion matrix, without normalization")
 
     print(cm)
-    plt.imshow(cm, interpolation="nearest", cmap=cmap)
+    plt.figure(figsize=(10, 10))
+    ax = plt.gca()
+    im = ax.imshow(cm, interpolation="nearest", cmap=cmap)
     plt.title(title)
-    plt.colorbar()
     tick_marks = np.arange(len(classes))
     plt.xticks(tick_marks, classes, rotation=45)
     plt.yticks(tick_marks, classes)
@@ -31,9 +33,12 @@ def plot_confusion_matrix(
             color="white" if cm[i, j] > thresh else "black",
         )
 
-    plt.tight_layout()
     plt.ylabel("True label")
     plt.xlabel("Predicted label")
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="5%", pad=0.05)
+    plt.colorbar(im, cax=cax)
+    plt.tight_layout()
 
 
 def plot_class_weights(weights_list, classes, legend_labels=[]):

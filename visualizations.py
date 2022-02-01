@@ -114,12 +114,14 @@ samples = [train_dataset1[128], train_dataset2[128]]
 fig, axs = plt.subplots(2, 2)
 for sample, row, row_nr in zip(samples, axs, range(len(axs))):
     for i, ax in enumerate(row):
-        transform = torchvision.transforms.Compose(trans[:0 if i == 0 else 5])
+        transform = torchvision.transforms.Compose(trans[:0 if i == 0 else 1])
         ax.imshow(transform(sample)[0][0], origin="lower", cmap="gist_stern")
-        ax.set_xticks([], [])
-        ax.set_yticks([], [])
+        if (i == 0 and row_nr == 0):
+            ax.set_xticks(range(0, 31, 10), range(0, 31, 10))
+        else:
+            ax.set_xticks(range(0, 26, 10), range(0, 26, 10))
         if row_nr == 0:
-            ax.set_title(trans_labels[0 if i == 0 else 5])
+            ax.set_title(trans_labels[0 if i == 0 else 1])
         if i == 0 and row_nr == 0:
             ax.set_ylabel("Physionet")
         elif i == 0 and row_nr == 1:
