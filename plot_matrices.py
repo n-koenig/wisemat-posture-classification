@@ -18,10 +18,20 @@ def f1_scores_from_conf_mat(cm):
 
 
 # define and load current benchmark values
-current = 'normalize'
-conf_mat = []
-with open(f'benchmarks/{current}.npy', 'rb') as f:
-    conf_mat = np.load(f)
+current = 'model_2'
+sum_conf = np.zeros((11, 11))
+for i in range(10):
+    with open(f'benchmarks/{current}_{i+1}.npy', 'rb') as f:
+        # print(sum_conf, np.load(f))
+        conf = np.load(f)
+        print(conf)
+        sum_conf += conf
+
+conf_mat = sum_conf / 10
+
+# conf_mat = []
+# with open(f'benchmarks/{current}.npy', 'rb') as f:
+#     conf_mat = np.load(f)
 
 with open(f'benchmarks/baseline.npy', 'rb') as f:
     base_conf_mat = np.load(f)
