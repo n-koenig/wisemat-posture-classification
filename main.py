@@ -36,7 +36,7 @@ from utils.plots import (
 ################
 
 num_trainings = 1
-num_epochs = 20
+num_epochs = 2
 learning_rate = 0.005
 batch_size = 100
 num_classes = len(classes)
@@ -114,11 +114,12 @@ def main():
     for i in range(num_trainings):
         conf_mat, acc = train_model(train_dataset, test_dataset, train_sampler)
         print(f"Accuracy of {i+1}. Network: {acc:.4f}")
+        print(conf_mat)
         conf_mats.append(conf_mat)
         conf_mat_sum += conf_mat
         finished += 1
 
-        with open(f'benchmarks/model_2_{finished}.npy', 'wb') as f:
+        with open(f'benchmarks/test.npy', 'wb') as f:
             np.save(f, conf_mat)
 
     # f1_scores = f1_scores_from_conf_mat(conf_mat_sum)
