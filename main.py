@@ -36,30 +36,13 @@ from utils.plots import (
 ################
 
 num_trainings = 1
-num_epochs = 1
+num_epochs = 20
 learning_rate = 0.005
-batch_size = 1000
+batch_size = 100
 num_classes = len(classes)
 
 
 def main():
-
-    conf_mat = None
-    conf_mat2 = None
-    with open("benchmarks/baseline.npy", "rb") as f:
-        conf_mat = np.load(f)
-    with open("benchmarks/normalize_equalize.npy", "rb") as f:
-        conf_mat2 = np.load(f)
-    plot_comparing_confusion_matrix(conf_mat, conf_mat2, classes, normalize=True)
-    plt.savefig("demo.png", transparent=True)
-    # plt.show()
-
-    # print(conf_mat)
-
-    f1_scores = f1_scores_from_conf_mat(conf_mat)
-
-    # print(f1_scores)
-
 
     ################
     #
@@ -74,7 +57,7 @@ def main():
             EqualizeHist(),
             Blur((5, 5)),
             Erode(),
-            Threshold(),
+            # Threshold(),
             Resize((52, 128), cv2.INTER_LINEAR),
             ToTensor(),
         ]
@@ -127,18 +110,22 @@ def main():
 
     conf_mat_sum = np.zeros((11, 11))
     conf_mats = []
+    finished = 2
     for i in range(num_trainings):
         conf_mat, acc = train_model(train_dataset, test_dataset, train_sampler)
         print(f"Accuracy of {i+1}. Network: {acc:.4f}")
         conf_mats.append(conf_mat)
         conf_mat_sum += conf_mat
+        finished += 1
 
-    f1_scores = f1_scores_from_conf_mat(conf_mat_sum)
-    mean_score = sum(f1_scores) / len(f1_scores)
+        with open(f'benchmarks/model_2_{finished}.npy', 'wb') as f:
+            np.save(f, conf_mat)
 
-    print(conf_mat_sum)
-    with open('benchmarks/baseline+threshold-median.npy', 'wb') as f:
-        np.save(f, conf_mat_sum)
+    # f1_scores = f1_scores_from_conf_mat(conf_mat_sum)
+    # mean_score = sum(f1_scores) / len(f1_scores)
+
+    # print(conf_mat_sum)
+    
 
     plot_confusion_matrix(conf_mat_sum, classes, normalize=True)
     plt.show()
