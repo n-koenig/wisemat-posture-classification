@@ -2,3 +2,4 @@ venv
 *.pyc
 .vscode
 *.docx
+data/physionet/.~lock.experiment-info.docx#

@@ -6,7 +6,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 # from https://deeplizard.com/learn/video/0LhiS6yu2qQ
 def plot_confusion_matrix(
-    cm, classes, normalize=False, title="Confusion matrix", cmap=plt.cm.Oranges
+    cm, classes, normalize=False, title="Confusion matrix", cmap=plt.cm.Oranges, label_color="#CACACA"
 ):
     if normalize:
         cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
@@ -34,27 +34,27 @@ def plot_confusion_matrix(
         )
 
     plt.ylabel("True label")
-    im.axes.tick_params(color="#CACACA", labelcolor="#CACACA")
-    ax.xaxis.label.set_color("#CACACA")
-    ax.yaxis.label.set_color("#CACACA")
+    im.axes.tick_params(color=label_color, labelcolor=label_color)
+    ax.xaxis.label.set_color(label_color)
+    ax.yaxis.label.set_color(label_color)
     plt.xlabel("Predicted label")
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.25)
     norm = mpl.colors.Normalize(vmin=-1, vmax=1)
     cb = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax)
-    cb.ax.yaxis.set_tick_params(color="#CACACA")
-    cb.outline.set_edgecolor("#CACACA")
-    plt.setp(plt.getp(cb.ax.axes, "yticklabels"), color="#CACACA")
+    cb.ax.yaxis.set_tick_params(color=label_color)
+    cb.outline.set_edgecolor(label_color)
+    plt.setp(plt.getp(cb.ax.axes, "yticklabels"), color=label_color)
 
     for spine in im.axes.spines.values():
-        spine.set_edgecolor("#CACACA")
+        spine.set_edgecolor(label_color)
 
     plt.tight_layout()
 
 
 def plot_comparing_confusion_matrix(
-    base_cm, compare_cm, classes, normalize=False, title="Confusion matrix"
+    base_cm, compare_cm, classes, normalize=False, title="Confusion matrix", label_color="#CACACA"
 ):
     if normalize:
         base_cm = base_cm.astype("float") / base_cm.sum(axis=1)[:, np.newaxis]
@@ -94,21 +94,21 @@ def plot_comparing_confusion_matrix(
         )
 
     plt.ylabel("True label")
-    im.axes.tick_params(color="#CACACA", labelcolor="#CACACA")
-    ax.xaxis.label.set_color("#CACACA")
-    ax.yaxis.label.set_color("#CACACA")
+    im.axes.tick_params(color=label_color, labelcolor=label_color)
+    ax.xaxis.label.set_color(label_color)
+    ax.yaxis.label.set_color(label_color)
     plt.xlabel("Predicted label")
 
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="5%", pad=0.25)
     norm = mpl.colors.Normalize(vmin=-1, vmax=1)
     cb = plt.colorbar(plt.cm.ScalarMappable(norm=norm, cmap=cmap), cax=cax)
-    cb.ax.yaxis.set_tick_params(color="#CACACA")
-    cb.outline.set_edgecolor("#CACACA")
-    plt.setp(plt.getp(cb.ax.axes, "yticklabels"), color="#CACACA")
+    cb.ax.yaxis.set_tick_params(color=label_color)
+    cb.outline.set_edgecolor(label_color)
+    plt.setp(plt.getp(cb.ax.axes, "yticklabels"), color=label_color)
 
     for spine in im.axes.spines.values():
-        spine.set_edgecolor("#CACACA")
+        spine.set_edgecolor(label_color)
 
     plt.tight_layout()
 
