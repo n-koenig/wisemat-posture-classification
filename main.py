@@ -112,6 +112,7 @@ def main():
     conf_mats = []
     finished = 2
     for i in range(num_trainings):
+        print("Starting Training")
         conf_mat, acc = train_model(train_dataset, test_dataset, train_sampler)
         print(f"Accuracy of {i+1}. Network: {acc:.4f}")
         print(conf_mat)
@@ -119,8 +120,8 @@ def main():
         conf_mat_sum += conf_mat
         finished += 1
 
-        with open(f'benchmarks/test.npy', 'wb') as f:
-            np.save(f, conf_mat)
+        #with open(f'benchmarks/test.npy', 'wb') as f:
+        #    np.save(f, conf_mat)
 
     # f1_scores = f1_scores_from_conf_mat(conf_mat_sum)
     # mean_score = sum(f1_scores) / len(f1_scores)
