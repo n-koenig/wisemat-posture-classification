@@ -22,12 +22,13 @@ from utils.transforms import (
     Normalize,
     EqualizeHist,
 )
-from sklearn.metrics import confusion_matrix, f1_score
+from sklearn.metrics import confusion_matrix
 from utils.plots import (
     plot_confusion_matrix,
     plot_comparing_confusion_matrix,
     plot_class_weights,
 )
+from utils.calculations import f1_scores_from_conf_mat
 
 ################
 #
@@ -35,7 +36,6 @@ from utils.plots import (
 #
 ################
 
-num_trainings = 1
 num_epochs = 2
 learning_rate = 0.005
 batch_size = 100
@@ -43,7 +43,26 @@ num_classes = len(classes)
 
 
 def main():
+    train_dataset, test_dataset, train_sampler = data_preprocessing()
 
+    # print(f"Number of training samples: {len(train_dataset)}")
+    # print(f"Number of testing samples: {len(test_dataset)}")
+
+    # conf_mat, acc = train_multiple(train_dataset, test_dataset, train_sampler, 2)
+    conf_mat, acc = train_model(train_dataset, test_dataset, train_sampler)
+       
+    f1_scores = f1_scores_from_conf_mat(conf_mat)
+    mean_f1_score = sum(f1_scores) / len(f1_scores)
+
+    # print(conf_mat)
+    print(mean_f1_score)
+    print(acc)
+    
+    # plot_confusion_matrix(conf_mat, classes, normalize=True)
+    # plt.show()
+
+
+def data_preprocessing():
     ################
     #
     # Data Reading & Preprocessing
@@ -55,8 +74,8 @@ def main():
             Resize((26, 64), cv2.INTER_LINEAR),
             Normalize(),
             EqualizeHist(),
-            Blur((5, 5)),
-            Erode(),
+            # Blur((5, 5)),
+            # Erode(),
             # Threshold(),
             Resize((52, 128), cv2.INTER_LINEAR),
             ToTensor(),
@@ -77,9 +96,6 @@ def main():
         ]
     )
 
-    print(f"Number of training samples: {len(train_dataset)}")
-    print(f"Number of testing samples: {len(test_dataset)}")
-
     # Over- & Undersampling
     train_labels = np.concatenate(
         [train_dataset.datasets[0].y, train_dataset.datasets[1].y]
@@ -87,50 +103,18 @@ def main():
     test_labels = np.concatenate(
         [test_dataset.datasets[0].y, test_dataset.datasets[1].y]
     )
+    
     _, train_class_counts = np.unique(train_labels, return_counts=True)
     _, test_class_counts = np.unique(test_labels, return_counts=True)
 
-    # plot_class_weights(
-    #     [
-    #         train_class_counts / train_class_counts.sum(),
-    #         test_class_counts / test_class_counts.sum(),
-    #     ],
-    #     classes,
-    #     [
-    #         "Training Data Class Weights",
-    #         "Test Data Class Weights",
-    #     ],
-    # )
-    # plt.show()
+    # show_class_distribution(train_class_counts, test_class_counts)
 
     weights = np.asarray([1.0 / train_class_counts[c] for c in train_labels])
     train_sampler = WeightedRandomSampler(
         weights=weights, num_samples=len(weights), replacement=True
     )
 
-    conf_mat_sum = np.zeros((11, 11))
-    conf_mats = []
-    finished = 2
-    for i in range(num_trainings):
-        print("Starting Training")
-        conf_mat, acc = train_model(train_dataset, test_dataset, train_sampler)
-        print(f"Accuracy of {i+1}. Network: {acc:.4f}")
-        print(conf_mat)
-        conf_mats.append(conf_mat)
-        conf_mat_sum += conf_mat
-        finished += 1
-
-        #with open(f'benchmarks/test.npy', 'wb') as f:
-        #    np.save(f, conf_mat)
-
-    # f1_scores = f1_scores_from_conf_mat(conf_mat_sum)
-    # mean_score = sum(f1_scores) / len(f1_scores)
-
-    # print(conf_mat_sum)
-    
-
-    plot_confusion_matrix(conf_mat_sum, classes, normalize=True)
-    plt.show()
+    return train_dataset, test_dataset, train_sampler
 
 
 def train_model(train_dataset, test_dataset, train_sampler):
@@ -169,10 +153,10 @@ def train_model(train_dataset, test_dataset, train_sampler):
             loss.backward()
             optimizer.step()
 
-            if (i + 1) % 50 == 0:
-                print(
-                    f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}"
-                )
+            # if (i + 1) % 50 == 0:
+            #     print(
+            #         f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}"
+            #     )
 
     with torch.no_grad():
         n_correct = 0
@@ -193,10 +177,43 @@ def train_model(train_dataset, test_dataset, train_sampler):
 
         acc = 100.0 * n_correct / n_samples
 
-        # print(f1_score(np.concatenate(lbllist), np.concatenate(predlist), average='macro'))
-        # print(f1_score(np.concatenate(lbllist), np.concatenate(predlist), average=None))
-
         return confusion_matrix(np.concatenate(lbllist), np.concatenate(predlist)), acc
+
+
+def train_multiple(train_dataset, test_dataset, train_sampler, num_trainings):
+    conf_mat_sum = np.zeros((11, 11))
+    acc_sum = 0
+    # conf_mats = []
+    # finished = 2
+    for i in range(num_trainings):
+        conf_mat, acc = train_model(train_dataset, test_dataset, train_sampler)
+        # print(f"Accuracy of {i+1}. Network: {acc:.4f}")
+        conf_mat_sum += conf_mat
+        acc_sum += acc
+        # conf_mats.append(conf_mat)
+        # finished += 1
+
+        # with open(f'benchmarks/test.npy', 'wb') as f:
+        #    np.save(f, conf_mat)
+    
+    mean_acc = acc_sum/num_trainings
+    return conf_mat_sum, mean_acc
+
+
+def show_class_distribution(train_class_counts, test_class_counts):
+
+    plot_class_weights(
+        [
+            train_class_counts / train_class_counts.sum(),
+            test_class_counts / test_class_counts.sum(),
+        ],
+        classes,
+        [
+            "Training Data Class Weights",
+            "Test Data Class Weights",
+        ],
+    )
+    plt.show()
 
 
 def f1_scores_from_conf_mat(cm):
