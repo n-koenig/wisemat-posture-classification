@@ -1,0 +1,129 @@
+f1: 0.7640
+acc: 74.4065
+
+f1: 0.8217            
+acc: 81.6259
+
+          2.568,14 Joules power/energy-cores/                                           ( +-  1,78% )
+              6,45 Joules power/energy-gpu/                                             ( +-  3,73% )
+            548,93 Joules power/energy-ram/                                             ( +-  0,84% )
+          3.066,58 Joules power/energy-pkg/                                             ( +-  1,35% )
+
+            313,96 +- 3,06 seconds time elapsed  ( +-  0,98% )
+
+mean f1: 0,7928
+efficiency: 
+
+0.7267
+79.5377
+
+0.8147
+84.4815
+
+0.8003
+76.1645
+
+0.8037
+78.2973
+
+0.8347
+85.7397
+
+0.8510
+88.2562
+
+0.8326
+84.6153
+
+0.8134
+81.1440
+
+0.8253
+85.0794
+
+0.8220
+84.8741
+
+ Performance counter stats for 'system wide' (10 runs):
+
+          2.384,95 Joules power/energy-cores/                                           ( +-  0,53% )
+              0,55 Joules power/energy-gpu/                                             ( +-  2,80% )
+            455,49 Joules power/energy-ram/                                             ( +-  0,19% )
+          2.799,30 Joules power/energy-pkg/                                             ( +-  0,44% )
+
+            275,25 +- 1,04 seconds time elapsed  ( +-  0,38% )
+
+
+
+
+f1: 0.8406
+acc: 86.7660
+
+f1: 0.8305
+acc: 84.8117
+
+f1: 0.7570
+acc: 73.7551
+
+f1: 0.6880
+acc: 46.2163
+
+f1: 0.7867
+acc: 75.2722
+
+f1: 0.7421
+acc: 75.7630
+
+f1: 0.8274
+acc: 86.7571
+
+f1: 0.7969
+acc: 84.3655
+
+f1: 0.8264
+acc: 85.3739
+
+f1: 0.7370
+acc: 78.2438
+
+f1: 0.6463
+acc: 73.1572
+
+f1: 0.7740
+acc: 75.8790
+
+f1: 0.7913
+acc: 83.2768
+
+f1: 0.7430
+acc: 69.8911
+
+f1: 0.7732
+acc: 76.8963
+
+f1: 0.7319
+acc: 77.7173
+
+f1: 0.8513
+acc: 87.4532
+
+f1: 0.8248
+acc: 86.0610
+
+f1: 0.8295
+acc: 85.1508
+
+f1: 0.8344
+acc: 86.1770
+
+ Performance counter stats for 'system wide' (20 runs):
+
+          2.343,80 Joules power/energy-cores/                                           ( +-  0,19% )
+              0,58 Joules power/energy-gpu/                                             ( +-  0,77% )
+            455,58 Joules power/energy-ram/                                             ( +-  0,17% )
+          2.731,72 Joules power/energy-pkg/                                             ( +-  0,16% )
+
+           278,340 +- 0,896 seconds time elapsed  ( +-  0,32% )
+
+
+
