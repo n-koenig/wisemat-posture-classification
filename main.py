@@ -36,7 +36,7 @@ from utils.calculations import f1_scores_from_conf_mat
 #
 ################
 
-num_epochs = 2
+num_epochs = 20
 learning_rate = 0.005
 batch_size = 100
 num_classes = len(classes)
@@ -55,8 +55,9 @@ def main():
     mean_f1_score = sum(f1_scores) / len(f1_scores)
 
     # print(conf_mat)
-    print(f"f1: {mean_f1_score:.4f}")
-    print(f"acc: {acc:.4f}")
+    print(f"{mean_f1_score:.4f}")
+    #print(f"f1: {mean_f1_score:.4f}")
+    #print(f"acc: {acc:.4f}")
     
     # plot_confusion_matrix(conf_mat, classes, normalize=True)
     # plt.show()
@@ -153,10 +154,10 @@ def train_model(train_dataset, test_dataset, train_sampler):
             loss.backward()
             optimizer.step()
 
-            if (i + 1) % 50 == 0:
-                print(
-                    f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}"
-                )
+            #if (i + 1) % 50 == 0:
+             #   print(
+              #      f"Epoch {epoch+1} / {num_epochs}, step {i+1}/{n_total_steps}, loss = {loss.item():.4f}"
+               # )
 
     with torch.no_grad():
         n_correct = 0
