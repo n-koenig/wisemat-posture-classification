@@ -42,6 +42,7 @@ Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py'
 0.812035
 
 
+
 Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py':
 [interval: 50ms, before: 0ms, after: 0ms, delay: 0ms, runs: 20]
 
@@ -55,6 +56,35 @@ Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py'
 	[0.8464, 0.8226, 0.7723, 0.7687, 0.8269, 0.749, 0.834, 0.8192, 0.8115, 0.7973, 0.8329, 0.7771, 0.8455, 0.8344, 0.7697, 0.7564, 0.7867, 0.7669, 0.7949, 0.814]
 0.80132
 
+
+
+Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py':
+[interval: 50ms, before: 0ms, after: 0ms, delay: 0ms, runs: 20]
+
+	14693.31 J nvml:nvidia_geforce_gtx_970_0	( +- 0.24% )
+	   68.17 J rapl:ram                     	( +- 0.86% )
+	 2200.11 J rapl:cores                   	( +- 1.33% )
+	 2714.09 J rapl:pkg                     	( +- 1.20% )
+
+	105.43332055 seconds time elapsed ( +- 0.71% )
+
+[0.8494, 0.7479, 0.7689, 0.8442, 0.8391, 0.8162, 0.7588, 0.8114, 0.7399, 0.79, 0.81, 0.8119, 0.7946, 0.8488, 0.8303, 0.7668, 0.8102, 0.8074, 0.7929, 0.7859]
+0.80123
+
+
+
+Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py':
+[interval: 50ms, before: 0ms, after: 0ms, delay: 0ms, runs: 20]
+
+	14701.35 J nvml:nvidia_geforce_gtx_970_0	( +- 0.44% )
+	   67.94 J rapl:ram                     	( +- 0.10% )
+	 2208.90 J rapl:cores                   	( +- 0.95% )
+	 2721.29 J rapl:pkg                     	( +- 0.96% )
+
+	105.26389744 seconds time elapsed ( +- 0.15% )
+
+[0.7411, 0.76, 0.8403, 0.758, 0.7633, 0.7806, 0.7766, 0.789, 0.7937, 0.7773, 0.8409, 0.8052, 0.8381, 0.7492, 0.734, 0.8112, 0.7788, 0.7751, 0.7817, 0.7844]
+0.783925
 
 
 
