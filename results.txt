@@ -1,3 +1,66 @@
+Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py':
+[interval: 50ms, before: 0ms, after: 0ms, delay: 0ms, runs: 20]
+
+	14721.98 J nvml:nvidia_geforce_gtx_970_0	( +- 0.52% )
+	   68.23 J rapl:ram                     	( +- 1.14% )
+	 2207.60 J rapl:cores                   	( +- 1.68% )
+	 2716.59 J rapl:pkg                     	( +- 1.56% )
+
+	105.27040362 seconds time elapsed ( +- 0.14% )
+
+[0.798, 0.7801, 0.7635, 0.7636, 0.8409, 0.7963, 0.7731, 0.7677, 0.8281, 0.8127, 0.789, 0.8208, 0.7574, 0.7766, 0.7926, 0.8149, 0.762, 0.8531, 0.8264, 0.8]
+0.79584
+
+
+
+Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py':
+[interval: 50ms, before: 0ms, after: 0ms, delay: 0ms, runs: 20]
+
+	13982.56 J nvml:nvidia_geforce_gtx_970_0	( +- 22.95% )
+	   64.71 J rapl:ram                     	( +- 22.94% )
+	 2086.40 J rapl:cores                   	( +- 22.98% )
+	 2571.12 J rapl:pkg                     	( +- 22.98% )
+
+	105.33138768 seconds time elapsed ( +- 0.18% )
+
+[0.7794, 0.8329, 0.8026, 0.8395, 0.8516, 0.8198, 0.7932, 0.7781, 0.7595, 0.8116, 0.7897, 0.7871, 0.7815, 0.8001, 0.7944, 0.7492, 0.766, 0.7993, 0.7617, 0.8181]
+0.7957650000000001
+
+
+
+Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py':
+[interval: 50ms, before: 0ms, after: 0ms, delay: 0ms, runs: 20]
+
+	14708.79 J nvml:nvidia_geforce_gtx_970_0	( +- 0.42% )
+	   68.11 J rapl:ram                     	( +- 0.14% )
+	 2209.46 J rapl:cores                   	( +- 1.15% )
+	 2723.26 J rapl:pkg                     	( +- 1.24% )
+
+	105.36187258 seconds time elapsed ( +- 0.12% )
+
+[0.7973, 0.7888, 0.7817, 0.8335, 0.8245, 0.8429, 0.7726, 0.838, 0.8231, 0.8026, 0.7816, 0.7967, 0.849, 0.7754, 0.8572, 0.7618, 0.8566, 0.8338, 0.7794, 0.8442]
+0.812035
+
+
+Energy counter stats for 'bash -c source ./venv/bin/activate && python3 main.py':
+[interval: 50ms, before: 0ms, after: 0ms, delay: 0ms, runs: 20]
+
+	13973.97 J nvml:nvidia_geforce_gtx_970_0	( +- 22.95% )
+	   64.68 J rapl:ram                     	( +- 22.94% )
+	 2103.80 J rapl:cores                   	( +- 22.98% )
+	 2589.08 J rapl:pkg                     	( +- 22.98% )
+
+	105.28114300 seconds time elapsed ( +- 0.20% )
+
+	[0.8464, 0.8226, 0.7723, 0.7687, 0.8269, 0.749, 0.834, 0.8192, 0.8115, 0.7973, 0.8329, 0.7771, 0.8455, 0.8344, 0.7697, 0.7564, 0.7867, 0.7669, 0.7949, 0.814]
+0.80132
+
+
+
+
+
+
+
 f1: 0.7640
 acc: 74.4065
 

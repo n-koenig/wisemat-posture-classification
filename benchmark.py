@@ -13,12 +13,8 @@ r = subprocess.Popen(['sudo', 'pinpoint', '-r', str(reps), '--', 'bash', '-c', '
 output, errs = r.communicate()
 print(output)
 
-
-f1_scores = []
-for i in range(reps):
-	f1_score = output[i*7:i*7+6].decode()
-	f1_scores.append(float(f1_score))
-	
-	
+f1_scores = [float(x) for x in output.decode().split("\n")[:-1]]
 print(f1_scores)
 print(statistics.mean(f1_scores))
+
+
