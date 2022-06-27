@@ -39,8 +39,8 @@ class PhysionetDataset(Dataset):
     )
 
     def __init__(self, transform=None, train=False):
-        subjects = range(1, 9) if train else range(9, 14)
-        records_per_subject = range(1, 18)
+        subjects = range(1, 2) if train else range(9, 10)
+        records_per_subject = range(1, 2)
         self.x, self.y = self.read_files(subjects, records_per_subject)
         # filter = Resize((26, 64), cv2.INTER_LINEAR)
         # for i in range(0, 6, 2):
@@ -79,37 +79,37 @@ class PhysionetDataset(Dataset):
             ),
         ]
 
-        with progressbar.ProgressBar(
-            max_value=len(subjects) * len(records_per_subject), widgets=widgets
-        ) as bar:
-            for subject in subjects:
-                for file in records_per_subject:
-                    # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
-                    raw_frames = np.loadtxt(
-                        f"{self.directory}experiment-i/S{subject}/{file}.txt",
-                        delimiter="\t",
-                        usecols=([_ for _ in range(2048)]),
-                        skiprows=2,
-                        dtype=np.float32,
-                    )
-                    # print(raw_frames.shape)
-                    raw_frames = np.reshape(raw_frames, (-1, 1, 64, 32))
-                    raw_frames = np.flip(raw_frames, (2, 3))
-                    x_tensors.append(raw_frames)
-                    y_tensors.append(
-                        np.full([raw_frames.shape[0]], self.labels_for_file[file - 1])
-                    )
-                    # print(
-                    #     f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset"
-                    # )
-                    # for x in range(9):
-                    #     i = random.randint(0, raw_frames.shape[0] - 1)
-                    #     plt.subplot(3, 3, x + 1)
-                    #     plt.imshow(raw_frames[i][0], origin="lower", cmap="gist_stern")
-                    bar.update(
-                        ((subject - subjects[0]) * len(records_per_subject)) + file,
-                        samples=reduce(lambda count, l: count + len(l), y_tensors, 0),
-                    )
+        # with progressbar.ProgressBar(
+        #     max_value=len(subjects) * len(records_per_subject), widgets=widgets
+        # ) as bar:
+        for subject in subjects:
+            for file in records_per_subject:
+                # usecols makes sure that last column is skipped, skiprows is used to select which frame(s) are read
+                raw_frames = np.loadtxt(
+                    f"{self.directory}experiment-i/S{subject}/{file}.txt",
+                    delimiter="\t",
+                    usecols=([_ for _ in range(2048)]),
+                    skiprows=2,
+                    dtype=np.float32,
+                )
+                # print(raw_frames.shape)
+                raw_frames = np.reshape(raw_frames, (-1, 1, 64, 32))
+                raw_frames = np.flip(raw_frames, (2, 3))
+                x_tensors.append(raw_frames)
+                y_tensors.append(
+                    np.full([raw_frames.shape[0]], self.labels_for_file[file - 1])
+                )
+                # print(
+                #     f"Subject {subject}, File {file} completed, {reduce(lambda count, l: count + len(l), y_tensors, 0)} samples in dataset"
+                # )
+                # for x in range(9):
+                #     i = random.randint(0, raw_frames.shape[0] - 1)
+                #     plt.subplot(3, 3, x + 1)
+                #     plt.imshow(raw_frames[i][0], origin="lower", cmap="gist_stern")
+                # bar.update(
+                #     ((subject - subjects[0]) * len(records_per_subject)) + file,
+                #     samples=reduce(lambda count, l: count + len(l), y_tensors, 0),
+                # )
 
         return np.concatenate(x_tensors), np.concatenate(y_tensors)
 
