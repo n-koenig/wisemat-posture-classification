@@ -36,7 +36,7 @@ from utils.calculations import f1_scores_from_conf_mat
 #
 ################
 
-num_epochs = 1
+num_epochs = 20
 learning_rate = 0.005
 batch_size = 100
 num_classes = len(classes)
@@ -55,7 +55,7 @@ def main():
     mean_f1_score = sum(f1_scores) / len(f1_scores)
 
     # print(conf_mat)
-    print(f"{mean_f1_score:.4f}")
+    print(f"{mean_f1_score:.4f}, '', '', ''")
     #print(f"f1: {mean_f1_score:.4f}")
     #print(f"acc: {acc:.4f}")
     
