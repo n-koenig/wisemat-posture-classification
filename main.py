@@ -36,7 +36,7 @@ from utils.calculations import f1_scores_from_conf_mat
 #
 ################
 
-num_epochs = 20
+num_epochs = 1
 learning_rate = 0.005
 batch_size = 100
 num_classes = len(classes)
