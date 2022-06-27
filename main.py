@@ -36,7 +36,7 @@ from utils.calculations import f1_scores_from_conf_mat
 #
 ################
 
-num_epochs = 1
+num_epochs = 20
 learning_rate = 0.005
 batch_size = 100
 num_classes = len(classes)
@@ -86,16 +86,16 @@ def data_preprocessing():
     train_dataset = ConcatDataset(
         [
             PhysionetDataset(composed_transforms, train=True),
-            # AmbientaDataset(composed_transforms, train=True),
+            AmbientaDataset(composed_transforms, train=True),
         ]
     )
 
-    # print("train finished")
+    #print("train finished")
 
     test_dataset = ConcatDataset(
         [
             PhysionetDataset(composed_transforms, train=False),
-            # AmbientaDataset(composed_transforms, train=False),
+            AmbientaDataset(composed_transforms, train=False),
         ]
     )
 

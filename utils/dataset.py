@@ -39,8 +39,8 @@ class PhysionetDataset(Dataset):
     )
 
     def __init__(self, transform=None, train=False):
-        subjects = range(1, 2) if train else range(9, 10)
-        records_per_subject = range(1, 2)
+        subjects = range(1, 9) if train else range(9, 14)
+        records_per_subject = range(1, 18)
         self.x, self.y = self.read_files(subjects, records_per_subject)
         # filter = Resize((26, 64), cv2.INTER_LINEAR)
         # for i in range(0, 6, 2):
